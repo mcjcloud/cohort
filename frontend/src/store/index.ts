@@ -1,12 +1,12 @@
 import { applyMiddleware, combineReducers, createStore } from "redux"
 import thunk from "redux-thunk"
 
-import todo, { TodoAction } from "./todo"
+import auth, { AuthAction } from "./auth"
 
 // Action Types
-export type Action = TodoAction
+export type Action = AuthAction
 
-const reducer = combineReducers({ todo })
+const reducer = combineReducers({ auth })
 export type State = ReturnType<typeof reducer>
 
 // create the redux store

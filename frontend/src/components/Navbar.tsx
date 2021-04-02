@@ -1,26 +1,25 @@
 import React from "react"
 import { useHistory } from "react-router-dom"
-import {
-  AppBar,
-  Button,
-  IconButton,
-  makeStyles,
-  Toolbar,
-  Typography,
-} from "@material-ui/core"
-import MenuIcon from "@material-ui/icons/Menu"
+import { AppBar, Button, makeStyles, Toolbar, Typography } from "@material-ui/core"
+import cohort from "../assets/cohort.png"
 
 const useStyles = makeStyles({
   toolbar: {
+    height: "64px",
     display: "flex",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    padding: "8px"
   },
   toolbarSection: {
     display: "flex",
     alignItems: "center",
+    height: "100%",
   },
   menuButton: {
     marginRight: "1rem",
+  },
+  logo: {
+    height: "100%",
   },
 })
 
@@ -31,15 +30,21 @@ const Navbar = (): JSX.Element => {
     <AppBar position="static">
       <Toolbar className={classes.toolbar}>
         <div className={classes.toolbarSection}>
-          <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6">
-            My Cool App
-          </Typography>
+          <img className={classes.logo} src={cohort} />
         </div>
         <div className={classes.toolbarSection}>
-          <Button onClick={() => history.push("/todo")} color="inherit">View To-Do's</Button>
+          <Button onClick={() => history.push("/")} color="inherit">
+            HOME
+          </Button>
+          <Button onClick={() => history.push("/events")} color="inherit">
+            EVENTS
+          </Button>
+          <Button onClick={() => history.push("/orgs")} color="inherit">
+            ORGANIZATIONS
+          </Button>
+          <Button onClick={() => history.push("/signin")} color="inherit">
+            SIGN-IN
+          </Button>
         </div>
       </Toolbar>
     </AppBar>
