@@ -1,6 +1,7 @@
 import { Button, Fab, makeStyles, Typography } from "@material-ui/core"
 import AddIcon from "@material-ui/icons/Add"
-import React from "react"
+import React, { useState } from "react"
+import CreateEventModal from "./CreateEventModal"
 
 const useStyles = makeStyles({
   root: {
@@ -19,6 +20,7 @@ const useStyles = makeStyles({
 
 const EventsPage = (): JSX.Element => {
   const classes = useStyles()
+  const [modalOpen, setModalOpen] = useState<boolean>(false)
 
   return (
     <div className={classes.root}>
@@ -26,7 +28,10 @@ const EventsPage = (): JSX.Element => {
         <Typography variant="h4" component="h4">
           Upcoming Events
         </Typography>
-        <Button variant="contained" color="primary">ADD EVENT</Button>
+        <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
+          ADD EVENT
+        </Button>
+        <CreateEventModal open={modalOpen} close={() => setModalOpen(false)} />
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import React from "react"
 import { useHistory } from "react-router-dom"
-import { AppBar, Button, makeStyles, Toolbar, Typography } from "@material-ui/core"
+import { AppBar, Button, makeStyles, Toolbar } from "@material-ui/core"
 import cohort from "../assets/cohort.png"
 
 const useStyles = makeStyles({
