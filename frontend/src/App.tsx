@@ -25,7 +25,7 @@ const App = (): JSX.Element => {
       <Router>
         <div className={classes.app}>
           {/* nav bar */}
-          <Navbars />
+          <Navbars/>
           {/* switch -- this finds the first route that matches the current url and renders its component (see routes.ts) */}
           <Switch>
             {routes.map((props, i) => (
