@@ -4,11 +4,12 @@ import thunk from "redux-thunk"
 
 import auth, { AuthAction } from "./auth"
 import org, { OrgAction } from "./org"
+import event, { EventAction } from "./event"
 
 // Action Types
-export type Action = AuthAction | OrgAction
+export type Action = AuthAction | OrgAction | EventAction
 
-const reducer = combineReducers({ auth, org })
+const reducer = combineReducers({ auth, org, event })
 export type State = ReturnType<typeof reducer>
 
 const middlware = compose(

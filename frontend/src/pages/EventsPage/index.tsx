@@ -1,7 +1,10 @@
 import { Button, Fab, makeStyles, Typography } from "@material-ui/core"
 import AddIcon from "@material-ui/icons/Add"
 import React, { useState } from "react"
+import { useSelector } from "react-redux"
+import { selectEvents } from "../../store/event"
 import CreateEventModal from "./CreateEventModal"
+import EventTile from "./EventTile"
 
 const useStyles = makeStyles({
   root: {
@@ -16,11 +19,13 @@ const useStyles = makeStyles({
     justifyContent: "space-between",
     margin: "32px",
   },
+  eventGrid: {},
 })
 
 const EventsPage = (): JSX.Element => {
   const classes = useStyles()
   const [modalOpen, setModalOpen] = useState<boolean>(false)
+  const events = useSelector(selectEvents())
 
   return (
     <div className={classes.root}>
@@ -32,6 +37,11 @@ const EventsPage = (): JSX.Element => {
           ADD EVENT
         </Button>
         <CreateEventModal open={modalOpen} close={() => setModalOpen(false)} />
+      </div>
+      <div className={classes.eventGrid}>
+        {events.map((e) => (
+          <EventTile event={e} />
+        ))}
       </div>
     </div>
   )
