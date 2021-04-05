@@ -3,5 +3,5 @@ export interface User {
   email: string
   firstName: string
   lastName: string
-  orgIds: string[]
+  orgs: string[]
 }
