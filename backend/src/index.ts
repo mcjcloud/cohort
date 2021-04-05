@@ -1,5 +1,6 @@
 import cors from "cors"
 import express from "express"
+import { orgRouter } from "./routes/org"
 import { todoRouter } from "./routes/todo"
 
 // create a new express app
@@ -14,6 +15,7 @@ app.use(cors())
 // add the todo route
 // all routes specified by todoRouter will be hit with /todo/{route}
 app.use("/todo", todoRouter)
+app.use("/org", orgRouter)
 
 // start the app
 app.listen(process.env.PORT || 8080, () => console.log("Server started."))

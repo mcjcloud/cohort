@@ -20,6 +20,6 @@ const useMongoDB = async (): Promise<MongoClient> => {
  */
 export const useCollection = async <T>(collectionName: string): Promise<Collection<T>> => {
   const client = await useMongoDB()
-  const db = await client.db("hackathon-starter")
+  const db = await client.db("cohort")
   return await db.collection<T>(collectionName)
 }

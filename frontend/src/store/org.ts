@@ -1,4 +1,3 @@
-import { User } from "../models/user"
 import { State as RootState } from "./index"
 import { Dispatch } from "redux"
 import { Org } from "../models/org"
@@ -11,9 +10,11 @@ export interface OrgState {
 
   // loading state
   isFetchingOrgs: boolean
+  isCreatingOrg: boolean
 
   // errors
   fetchOrgsError?: any
+  createOrgError?: any
 }
 
 // Action Types
@@ -23,6 +24,7 @@ export interface OrgErrored {
   type: "ORG_ERRORED"
   payload: {
     fetchOrgsError?: any
+    createOrgError?: any
   }
 }
 
@@ -36,15 +38,24 @@ export interface OrgsFetched {
   }
 }
 
-// TodoAction type
+export interface CreateOrgStarted {
+  type: "CREATE_ORG_STARTED"
+}
+export interface OrgCreated {
+  type: "ORG_CREATED"
+  payload: Org
+}
+
+// OrgAction type
 // this is a type which can refer to any of the action types defined above
 // this is useful for the reducer
-export type OrgAction = OrgErrored | OrgsFetched | FetchOrgsStarted
+export type OrgAction = OrgErrored | OrgsFetched | FetchOrgsStarted | OrgCreated | CreateOrgStarted
 
 // Default state
 // when the app initializes, this will be the default redux state
 const defaultState: OrgState = {
   isFetchingOrgs: false,
+  isCreatingOrg: false,
   orgs: [],
 }
 
@@ -52,16 +63,31 @@ const defaultState: OrgState = {
 const reducer = (state: OrgState = defaultState, action: OrgAction): OrgState => {
   switch (action.type) {
     case "ORG_ERRORED": {
-      return { ...state, ...action.payload, isFetchingOrgs: !action.payload.fetchOrgsError }
+      return {
+        ...state,
+        ...action.payload,
+        isFetchingOrgs: !action.payload.fetchOrgsError,
+        isCreatingOrg: !action.payload.createOrgError,
+      }
     }
     case "FETCH_ORGS_STARTED": {
-      return { ...state, isFetchingOrgs: true }
+      return { ...state, isFetchingOrgs: true, fetchOrgsError: null }
     }
     case "ORGS_FETCHED": {
       return {
         ...state,
         isFetchingOrgs: false,
         orgs: action.payload.orgs,
+      }
+    }
+    case "CREATE_ORG_STARTED": {
+      return { ...state, isCreatingOrg: true, createOrgError: null }
+    }
+    case "ORG_CREATED": {
+      return {
+        ...state,
+        isCreatingOrg: false,
+        orgs: [...state.orgs, action.payload],
       }
     }
     default: {
@@ -77,7 +103,7 @@ export default reducer
 export const fetchOrgs = () => async (dispatch: Dispatch) => {
   dispatch({ type: "FETCH_ORGS_STARTED" })
   try {
-    const response = await fetch(`${API_ENDPOINT}/orgs`).then((r) => r.json())
+    const response = await fetch(`${API_ENDPOINT}/org`).then((r) => r.json())
     if (response && response.orgs) {
       dispatch({
         type: "ORGS_FETCHED",
@@ -99,7 +125,39 @@ export const fetchOrgs = () => async (dispatch: Dispatch) => {
   }
 }
 
+export const createOrg = (org: Org) => async (dispatch: Dispatch) => {
+  dispatch({ type: "CREATE_ORG_STARTED" })
+  try {
+    const response = await fetch(`${API_ENDPOINT}/org`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(org),
+    }).then((r) => r.json())
+    if (response) {
+      dispatch({
+        type: "ORG_CREATED",
+        payload: response,
+      })
+      return response
+    } else {
+      dispatch({
+        type: "ORG_ERRORED",
+        payload: { createOrgError: response?.error?.toString?.() ?? "Error creating org" },
+      })
+    }
+  } catch (e) {
+    dispatch({
+      type: "ORG_ERRORED",
+      payload: { createOrgError: e.toString?.() ?? "Error creating org" },
+    })
+  }
+}
+
 // Selectors
 // these are functions to be used by useSelector in order to get data from redux
-export const selectOrgs = () => (state: RootState) => state.org.orgs ?? []
 export const selectIsFetchingOrgs = () => (state: RootState) => state.org.isFetchingOrgs
+export const selectIsCreatingOrg = () => (state: RootState) => state.org.isCreatingOrg
+
+export const selectOrgs = () => (state: RootState) => state.org.orgs ?? []
+
+export const selectCreateOrgError = () => (state: RootState) => state.org.createOrgError

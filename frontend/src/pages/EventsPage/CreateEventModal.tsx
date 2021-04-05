@@ -58,13 +58,13 @@ const CreateEventModal: React.FC<Props> = ({ open = false, close }) => {
     if (open) {
       dispatch(fetchOrgs())
     }
-  }, [open])
+  }, [open, dispatch])
 
   useEffect(() => {
     if (!organizer && organizations.length > 0) {
       setOrganizer(organizations[0].guid)
     }
-  }, [organizations])
+  }, [organizations, organizer])
 
   const _createEvent = async () => {
     const event: any = await dispatch(
