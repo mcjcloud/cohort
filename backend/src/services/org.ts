@@ -2,6 +2,7 @@ import { v4 as uuid } from "uuid"
 
 import { useCollection } from "./db"
 import { Org } from "../models/org"
+import { User } from "../models/user"
 
 /**
  * get all todo items in the database
@@ -31,4 +32,17 @@ export const addOrg = async (org: Org): Promise<Org> => {
     throw new Error("Could not insert org")
   }
   return item
+}
+
+export const joinOrg = async (userId: string, orgId: string): Promise<boolean> => {
+  const userCollection = await useCollection<User>("user")
+  const result = await userCollection.findOneAndUpdate(
+    { guid: userId },
+    {
+      $push: {
+        orgs: orgId,
+      },
+    }
+  )
+  return !!result.ok
 }

@@ -78,7 +78,6 @@ authRouter.post("/signin", async (req: Request, res: Response) => {
     }
 
     const hash = await bcrypt.hash(password, user.salt)
-    console.log({ hash, password: user.password })
     if (hash !== user.password) {
       return res.status(403).json({
         error: "Incorrect email or password",
@@ -102,5 +101,42 @@ authRouter.post("/signin", async (req: Request, res: Response) => {
   } catch (err) {
     console.log(err.message)
     res.status(500).send("Error in Saving")
+  }
+})
+
+authRouter.post("/renew", async (req: Request, res: Response) => {
+  const { token } = req.body
+  if (!token) {
+    return res.status(400).json({ error: "missing email or password" })
+  }
+
+  try {
+    const { user } = jwt.decode(token, { json: true })
+    if (!user) {
+      return res.status(403).json({
+        error: "Invalid token",
+      })
+    }
+
+    const userCollection = await useCollection<User>("user")
+    const userDoc = await userCollection.findOne({ guid: user.id })
+
+    const newToken = jwt.sign(
+      {
+        user: {
+          id: userDoc.guid,
+        },
+      },
+      "randomString",
+      {
+        expiresIn: 10000,
+      }
+    )
+    delete userDoc.password
+    delete userDoc.salt
+    res.status(200).json({ token: newToken, user: userDoc })
+  } catch (err) {
+    console.log(err.message)
+    res.status(500).send("Error renewing token")
   }
 })

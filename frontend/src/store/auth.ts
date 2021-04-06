@@ -12,10 +12,12 @@ export interface AuthState {
   // loading state
   isSigningIn: boolean
   isSigningUp: boolean
+  isRenewingToken: boolean
 
   // errors
-  signinError?: any
-  signupError?: any
+  signinError?: string
+  signupError?: string
+  renewTokenError?: string
 }
 
 // Action Types
@@ -24,8 +26,9 @@ export interface AuthState {
 export interface AuthErrored {
   type: "AUTH_ERRORED"
   payload: {
-    signinError?: any
-    signupError?: any
+    signinError?: string
+    signupError?: string
+    renewTokenError?: string
   }
 }
 
@@ -51,16 +54,40 @@ export interface SignedUp {
   }
 }
 
+export interface RenewTokenStarted {
+  type: "RENEW_TOKEN_STARTED"
+}
+export interface TokenRenewed {
+  type: "TOKEN_RENEWED"
+  payload: {
+    token: string
+    user: User
+  }
+}
+
+export interface SignOut {
+  type: "SIGN_OUT"
+}
+
 // TodoAction type
 // this is a type which can refer to any of the action types defined above
 // this is useful for the reducer
-export type AuthAction = AuthErrored | SignedIn | SigninStarted | SignedUp | SignupStarted
+export type AuthAction =
+  | AuthErrored
+  | SignedIn
+  | SigninStarted
+  | SignedUp
+  | SignupStarted
+  | TokenRenewed
+  | RenewTokenStarted
+  | SignOut
 
 // Default state
 // when the app initializes, this will be the default redux state
 const defaultState: AuthState = {
   isSigningIn: false,
   isSigningUp: false,
+  isRenewingToken: false,
   token: "",
 }
 
@@ -68,7 +95,13 @@ const defaultState: AuthState = {
 const reducer = (state: AuthState = defaultState, action: AuthAction): AuthState => {
   switch (action.type) {
     case "AUTH_ERRORED": {
-      return { ...state, ...action.payload }
+      return {
+        ...state,
+        ...action.payload,
+        isSigningIn: !action.payload.signinError,
+        isSigningUp: !action.payload.signupError,
+        isRenewingToken: !action.payload.renewTokenError,
+      }
     }
     case "SIGNIN_STARTED": {
       return { ...state, isSigningIn: true }
@@ -90,6 +123,19 @@ const reducer = (state: AuthState = defaultState, action: AuthAction): AuthState
         isSigningUp: false,
       }
     }
+    case "RENEW_TOKEN_STARTED": {
+      return { ...state, isRenewingToken: true }
+    }
+    case "TOKEN_RENEWED": {
+      return {
+        ...state,
+        ...action.payload,
+        isRenewingToken: false,
+      }
+    }
+    case "SIGN_OUT": {
+      return { ...state, token: "", user: undefined }
+    }
     default: {
       return state
     }
@@ -101,25 +147,33 @@ export default reducer
 // these are dispatchable functions which update the redux state
 
 export const signIn = (email: string, password: string) => async (dispatch: Dispatch) => {
-  dispatch({ type: "SIGNIN_STARTED" })
-  const response = await fetch(`${API_ENDPOINT}/auth/signin`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  }).then((r) => r.json())
-  if (response && response.user && response.token) {
-    dispatch({
-      type: "SIGNED_IN",
-      payload: {
-        token: response.token,
-        user: response.user,
-      },
-    })
-    return response.user
-  } else {
+  try {
+    dispatch({ type: "SIGNIN_STARTED" })
+    const response = await fetch(`${API_ENDPOINT}/auth/signin`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    }).then((r) => r.json())
+    if (response && response.user && response.token) {
+      dispatch({
+        type: "SIGNED_IN",
+        payload: {
+          token: response.token,
+          user: response.user,
+        },
+      })
+      window.localStorage.setItem("token", response.token)
+      return response.user
+    } else {
+      dispatch({
+        type: "AUTH_ERRORED",
+        payload: { signinError: response?.error?.toString?.() ?? "Error signing in" },
+      })
+    }
+  } catch (e) {
     dispatch({
       type: "AUTH_ERRORED",
-      payload: { signinError: response?.error ?? "Error signing in" },
+      payload: { signinError: e?.toString?.() ?? "Error signing in" },
     })
   }
 }
@@ -130,30 +184,78 @@ export const signUp = (
   email: string,
   password: string
 ) => async (dispatch: Dispatch) => {
-  dispatch({ type: "SIGNUP_STARTED" })
-  const response = await fetch(`${API_ENDPOINT}/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ firstName, lastName, email, password }),
-  }).then((r) => r.json())
-  if (response && response.user && response.token) {
-    dispatch({
-      type: "SIGNED_UP",
-      payload: {
-        token: response.token,
-        user: response.user,
-      },
-    })
-    return response.user
-  } else {
+  try {
+    dispatch({ type: "SIGNUP_STARTED" })
+    const response = await fetch(`${API_ENDPOINT}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ firstName, lastName, email, password }),
+    }).then((r) => r.json())
+    if (response && response.user && response.token) {
+      dispatch({
+        type: "SIGNED_UP",
+        payload: {
+          token: response.token,
+          user: response.user,
+        },
+      })
+      window.localStorage.setItem("token", response.token)
+      return response.user
+    } else {
+      dispatch({
+        type: "AUTH_ERRORED",
+        payload: { signupError: response?.error?.toString?.() ?? "Error signing up" },
+      })
+    }
+  } catch (e) {
     dispatch({
       type: "AUTH_ERRORED",
-      payload: { signupError: response?.error ?? "Error signing up" },
+      payload: { signupError: e?.toString?.() ?? "Error signing up" },
     })
   }
+}
+
+export const renew = (token: string) => async (dispatch: Dispatch) => {
+  try {
+    dispatch({ type: "SIGNUP_STARTED" })
+    const response = await fetch(`${API_ENDPOINT}/auth/renew`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    }).then((r) => r.json())
+    if (response && response.user && response.token) {
+      dispatch({
+        type: "TOKEN_RENEWED",
+        payload: {
+          token: response.token,
+          user: response.user,
+        },
+      })
+      window.localStorage.setItem("token", response.token)
+      return response.user
+    } else {
+      dispatch({
+        type: "AUTH_ERRORED",
+        payload: { signupError: response?.error?.toString?.() ?? "Error signing up" },
+      })
+    }
+  } catch (e) {
+    dispatch({
+      type: "AUTH_ERRORED",
+      payload: { signupError: e?.toString?.() ?? "Error signing up" },
+    })
+  }
+}
+
+export const signOut = () => async (dispatch: Dispatch) => {
+  dispatch({ type: "SIGN_OUT" })
+  window.localStorage.removeItem("token")
 }
 
 // Selectors
 // these are functions to be used by useSelector in order to get data from redux
 export const selectUser = () => (state: RootState) => state.auth.user
 export const selectToken = () => (state: RootState) => state.auth.token
+
+export const selectSignInError = () => (state: RootState) => state.auth.signinError
+export const selectSignUpError = () => (state: RootState) => state.auth.signupError

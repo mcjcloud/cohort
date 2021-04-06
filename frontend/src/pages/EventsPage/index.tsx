@@ -1,7 +1,7 @@
-import { Button, Fab, makeStyles, Typography } from "@material-ui/core"
-import AddIcon from "@material-ui/icons/Add"
+import { Button, makeStyles, Typography } from "@material-ui/core"
 import React, { useState } from "react"
 import { useSelector } from "react-redux"
+import { selectUser } from "../../store/auth"
 import { selectEvents } from "../../store/event"
 import CreateEventModal from "./CreateEventModal"
 import EventTile from "./EventTile"
@@ -26,6 +26,7 @@ const EventsPage = (): JSX.Element => {
   const classes = useStyles()
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const events = useSelector(selectEvents())
+  const user = useSelector(selectUser())
 
   return (
     <div className={classes.root}>
@@ -33,9 +34,11 @@ const EventsPage = (): JSX.Element => {
         <Typography variant="h4" component="h4">
           Upcoming Events
         </Typography>
-        <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
-          ADD EVENT
-        </Button>
+        {user && (
+          <Button variant="contained" color="primary" onClick={() => setModalOpen(true)}>
+            ADD EVENT
+          </Button>
+        )}
         <CreateEventModal open={modalOpen} close={() => setModalOpen(false)} />
       </div>
       <div className={classes.eventGrid}>

@@ -1,7 +1,8 @@
-import { makeStyles, Card, TextField, Button, Tabs, Tab } from "@material-ui/core"
+import { makeStyles, Card, TextField, Button, Tabs, Tab, Typography } from "@material-ui/core"
 import React, { useState } from "react"
-import { useDispatch } from "react-redux"
-import { signIn, signUp } from "../store/auth"
+import { useDispatch, useSelector } from "react-redux"
+import { useHistory } from "react-router"
+import { selectSignInError, selectSignUpError, signIn, signUp } from "../store/auth"
 
 const useStyles = makeStyles({
   root: {
@@ -38,11 +39,19 @@ const useStyles = makeStyles({
     gridTemplateColumns: "1fr",
     gap: "8px",
   },
+  error: {
+    marginTop: "8px",
+    color: "red",
+  },
 })
 
 const SigninPage = (): JSX.Element => {
   const classes = useStyles()
   const dispatch = useDispatch()
+  const history = useHistory()
+
+  const signInError = useSelector(selectSignInError())
+  const signUpError = useSelector(selectSignUpError())
 
   const [tab, setTab] = useState<number>(0)
 
@@ -52,12 +61,18 @@ const SigninPage = (): JSX.Element => {
   const [firstName, setFirstName] = useState<string>("")
   const [lastName, setLastName] = useState<string>("")
 
-  const signin = () => {
-    dispatch(signIn(email, password))
+  const signin = async () => {
+    const user: any = await dispatch(signIn(email, password))
+    if (user) {
+      history.push("/")
+    }
   }
 
-  const signup = () => {
-    dispatch(signUp(firstName, lastName, email, password))
+  const signup = async () => {
+    const user: any = await dispatch(signUp(firstName, lastName, email, password))
+    if (user) {
+      history.push("/")
+    }
   }
 
   return (
@@ -126,6 +141,16 @@ const SigninPage = (): JSX.Element => {
               </Button>
             )}
           </div>
+          {tab === 0 && signInError && (
+            <Typography variant="caption" component="p" className={classes.error}>
+              {signInError}
+            </Typography>
+          )}
+          {tab === 1 && signUpError && (
+            <Typography variant="caption" component="p" className={classes.error}>
+              {signUpError}
+            </Typography>
+          )}
         </div>
       </Card>
     </div>

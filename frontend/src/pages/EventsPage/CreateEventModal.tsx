@@ -12,6 +12,7 @@ import {
 } from "@material-ui/core"
 import React, { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
+import { selectUser } from "../../store/auth"
 import { createEvent, selectCreateEventError } from "../../store/event"
 import { fetchOrgs, selectIsFetchingOrgs, selectOrgs } from "../../store/org"
 
@@ -43,8 +44,10 @@ const CreateEventModal: React.FC<Props> = ({ open = false, close }) => {
   const classes = useStyles()
   const dispatch = useDispatch()
   const isFetchingOrgs = useSelector(selectIsFetchingOrgs())
-  const organizations = useSelector(selectOrgs())
+  const _organizations = useSelector(selectOrgs())
   const createEventError = useSelector(selectCreateEventError())
+  const user = useSelector(selectUser())
+  const organizations = _organizations.filter((o) => user?.orgs.includes(o.guid))
 
   const [name, setName] = useState<string>("")
   const [organizer, setOrganizer] = useState<string>("")
@@ -84,7 +87,7 @@ const CreateEventModal: React.FC<Props> = ({ open = false, close }) => {
   }
 
   return (
-    <Dialog className={classes.root} open={open} onClose={close} fullWidth maxWidth="sm">
+    <Dialog className={classes.root} open={open && !!user} onClose={close} fullWidth maxWidth="sm">
       <div className={classes.wrapper}>
         {isFetchingOrgs && (
           <div className={classes.spinner}>
@@ -115,7 +118,6 @@ const CreateEventModal: React.FC<Props> = ({ open = false, close }) => {
                 onChange={(e) => setOrganizer(e.target.value as string)}
                 disabled={organizations.length <= 1}
               >
-                {/* TODO: filter out orgs that the user isn't a member of */}
                 {organizations.map((org) => (
                   <MenuItem value={org.guid}>{org.name}</MenuItem>
                 ))}
