@@ -13,8 +13,8 @@ export interface OrgState {
   isCreatingOrg: boolean
 
   // errors
-  fetchOrgsError?: any
-  createOrgError?: any
+  fetchOrgsError?: string
+  createOrgError?: string
 }
 
 // Action Types
@@ -71,7 +71,7 @@ const reducer = (state: OrgState = defaultState, action: OrgAction): OrgState =>
       }
     }
     case "FETCH_ORGS_STARTED": {
-      return { ...state, isFetchingOrgs: true, fetchOrgsError: null }
+      return { ...state, isFetchingOrgs: true, fetchOrgsError: "" }
     }
     case "ORGS_FETCHED": {
       return {
@@ -81,7 +81,7 @@ const reducer = (state: OrgState = defaultState, action: OrgAction): OrgState =>
       }
     }
     case "CREATE_ORG_STARTED": {
-      return { ...state, isCreatingOrg: true, createOrgError: null }
+      return { ...state, isCreatingOrg: true, createOrgError: "" }
     }
     case "ORG_CREATED": {
       return {
@@ -114,13 +114,13 @@ export const fetchOrgs = () => async (dispatch: Dispatch) => {
     } else {
       dispatch({
         type: "ORG_ERRORED",
-        payload: { fetchOrgsError: response?.error ?? "Error fetching orgs" },
+        payload: { fetchOrgsError: response?.error?.toString?.() ?? "Error fetching orgs" },
       })
     }
   } catch (e) {
     dispatch({
       type: "ORG_ERRORED",
-      payload: { fetchOrgsError: e ?? "Error fetching orgs" },
+      payload: { fetchOrgsError: e?.toString?.() ?? "Error fetching orgs" },
     })
   }
 }

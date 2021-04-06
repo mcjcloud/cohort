@@ -13,8 +13,8 @@ export interface EventState {
   isCreatingEvent: boolean
 
   // errors
-  fetchEventsError?: any
-  createEventError?: any
+  fetchEventsError?: string
+  createEventError?: string
 }
 
 // Action Types
@@ -76,7 +76,7 @@ const reducer = (state: EventState = defaultState, action: EventAction): EventSt
       }
     }
     case "FETCH_EVENTS_STARTED": {
-      return { ...state, isFetchingEvents: true, fetchEventsError: null }
+      return { ...state, isFetchingEvents: true, fetchEventsError: "" }
     }
     case "EVENTS_FETCHED": {
       return {
@@ -86,7 +86,7 @@ const reducer = (state: EventState = defaultState, action: EventAction): EventSt
       }
     }
     case "CREATE_EVENT_STARTED": {
-      return { ...state, isCreatingEvent: true, createEventError: null }
+      return { ...state, isCreatingEvent: true, createEventError: "" }
     }
     case "EVENT_CREATED": {
       return {
@@ -119,13 +119,13 @@ export const fetchEvents = () => async (dispatch: Dispatch) => {
     } else {
       dispatch({
         type: "EVENT_ERRORED",
-        payload: { fetchEventsError: response?.error ?? "Error fetching events" },
+        payload: { fetchEventsError: response?.error?.toString?.() ?? "Error fetching events" },
       })
     }
   } catch (e) {
     dispatch({
       type: "EVENT_ERRORED",
-      payload: { fetchEventsError: e ?? "Error fetching events" },
+      payload: { fetchEventsError: e?.toString?.() ?? "Error fetching events" },
     })
   }
 }
@@ -147,13 +147,13 @@ export const createEvent = (e: Event) => async (dispatch: Dispatch) => {
     } else {
       dispatch({
         type: "EVENT_ERRORED",
-        payload: { createEventError: response?.error ?? "Error creating event" },
+        payload: { createEventError: response?.error?.toString?.() ?? "Error creating event" },
       })
     }
   } catch (e) {
     dispatch({
       type: "EVENT_ERRORED",
-      payload: { createEventError: e ?? "Error creating event" },
+      payload: { createEventError: e?.toString?.() ?? "Error creating event" },
     })
   }
 }

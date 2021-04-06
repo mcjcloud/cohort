@@ -2,16 +2,18 @@ import { Button, CircularProgress, List, ListItem, makeStyles, Typography } from
 import React, { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { Org } from "../../models/org"
+import { selectUser } from "../../store/auth"
 import { fetchOrgs, selectIsFetchingOrgs, selectOrgs } from "../../store/org"
 import CreateOrgModal from "./CreateOrgModal"
 
 const useStyles = makeStyles({
   root: {
     width: "100vw",
-    height: "100%",
+    flex: 1,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    overflow: "auto",
   },
   header: {
     alignSelf: "stretch",
@@ -26,6 +28,11 @@ const useStyles = makeStyles({
   },
   listItem: {
     display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  info: {
+    display: "flex",
     flexDirection: "column",
     alignItems: "flex-start",
   },
@@ -37,6 +44,7 @@ const OrgsPage = (): JSX.Element => {
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const orgs = useSelector(selectOrgs())
   const isFetchingOrgs = useSelector(selectIsFetchingOrgs())
+  const user = useSelector(selectUser())
 
   useEffect(() => {
     dispatch(fetchOrgs())
@@ -52,6 +60,7 @@ const OrgsPage = (): JSX.Element => {
 
   return (
     <div className={classes.root}>
+      {/* <p>{JSON.stringify(user)}</p> */}
       <div className={classes.header}>
         <Typography variant="h4" component="h4">
           Organizations
@@ -63,13 +72,17 @@ const OrgsPage = (): JSX.Element => {
       </div>
       <List component="nav" className={classes.orgList}>
         {orgs.map((org: Org) => (
-          <ListItem button component="a" href={`/orgs/${org.guid}`} className={classes.listItem}>
-            <Typography variant="h6" component="p">
-              {org.name}
-            </Typography>
-            <Typography variant="caption" component="p">
-              {org.description}
-            </Typography>
+          <ListItem component="div" className={classes.listItem}>
+            <div className={classes.info}>
+              <Typography variant="h6" component="p">
+                {org.name}
+              </Typography>
+              <Typography variant="caption" component="p">
+                {org.description}
+              </Typography>
+            </div>
+            {user && <>{user.orgs.includes(org.guid) && <Button>Leave</Button>}</>}
+            {user && <>{!user.orgs.includes(org.guid) && <Button>Join</Button>}</>}
           </ListItem>
         ))}
       </List>

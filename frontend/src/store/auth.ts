@@ -76,8 +76,8 @@ const reducer = (state: AuthState = defaultState, action: AuthAction): AuthState
     case "SIGNED_IN": {
       return {
         ...state,
+        ...action.payload,
         isSigningIn: false,
-        user: action.payload.user,
       }
     }
     case "SIGNUP_STARTED": {
@@ -86,8 +86,8 @@ const reducer = (state: AuthState = defaultState, action: AuthAction): AuthState
     case "SIGNED_UP": {
       return {
         ...state,
+        ...action.payload,
         isSigningUp: false,
-        user: action.payload.user,
       }
     }
     default: {
@@ -102,7 +102,7 @@ export default reducer
 
 export const signIn = (email: string, password: string) => async (dispatch: Dispatch) => {
   dispatch({ type: "SIGNIN_STARTED" })
-  const response = await fetch(`${API_ENDPOINT}/signin`, {
+  const response = await fetch(`${API_ENDPOINT}/auth/signin`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -115,6 +115,7 @@ export const signIn = (email: string, password: string) => async (dispatch: Disp
         user: response.user,
       },
     })
+    return response.user
   } else {
     dispatch({
       type: "AUTH_ERRORED",
@@ -130,7 +131,7 @@ export const signUp = (
   password: string
 ) => async (dispatch: Dispatch) => {
   dispatch({ type: "SIGNUP_STARTED" })
-  const response = await fetch(`${API_ENDPOINT}/signup`, {
+  const response = await fetch(`${API_ENDPOINT}/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ firstName, lastName, email, password }),
@@ -143,6 +144,7 @@ export const signUp = (
         user: response.user,
       },
     })
+    return response.user
   } else {
     dispatch({
       type: "AUTH_ERRORED",
@@ -153,3 +155,5 @@ export const signUp = (
 
 // Selectors
 // these are functions to be used by useSelector in order to get data from redux
+export const selectUser = () => (state: RootState) => state.auth.user
+export const selectToken = () => (state: RootState) => state.auth.token

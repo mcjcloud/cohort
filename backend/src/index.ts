@@ -21,4 +21,3 @@ app.use("/org", orgRouter)
 
 // start the app
 app.listen(process.env.PORT || 8080, () => console.log("Server started."))
-
