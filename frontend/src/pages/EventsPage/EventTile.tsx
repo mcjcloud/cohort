@@ -11,6 +11,7 @@ import { useSelector } from "react-redux"
 import { Event } from "../../models/event"
 import { selectOrgs } from "../../store/org"
 import cohort from "../../assets/cohort.jpeg"
+import { useHistory } from "react-router"
 
 const useStyles = makeStyles({
   root: {
@@ -31,11 +32,16 @@ interface Props {
   event: Event
 }
 const EventTile: React.FC<Props> = ({ event }) => {
+  const history = useHistory()
   const classes = useStyles()
   const orgs = useSelector(selectOrgs())
 
   return (
-    <Card variant="outlined" className={classes.root}>
+    <Card
+      variant="outlined"
+      className={classes.root}
+      onClick={() => history.push(`/events/${event.guid}`)}
+    >
       <CardActionArea>
         <CardMedia component="img" alt="event" height="200" src={cohort} />
         <CardContent className={classes.content}>
