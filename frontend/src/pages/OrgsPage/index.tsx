@@ -2,7 +2,7 @@ import { Button, CircularProgress, List, ListItem, makeStyles, Typography } from
 import React, { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { Org } from "../../models/org"
-import { selectUser } from "../../store/auth"
+import { joinOrg, leaveOrg, selectUser } from "../../store/auth"
 import { fetchOrgs, selectIsFetchingOrgs, selectOrgs } from "../../store/org"
 import CreateOrgModal from "./CreateOrgModal"
 
@@ -50,6 +50,14 @@ const OrgsPage = (): JSX.Element => {
     dispatch(fetchOrgs())
   }, [dispatch])
 
+  const join = async (orgId: string, userId: string) => {
+    await dispatch(joinOrg(orgId, userId))
+  }
+
+  const leave = async (orgId: string, userId: string) => {
+    await dispatch(leaveOrg(orgId, userId))
+  }
+
   if (isFetchingOrgs) {
     return (
       <div className={classes.root}>
@@ -60,7 +68,6 @@ const OrgsPage = (): JSX.Element => {
 
   return (
     <div className={classes.root}>
-      {/* <p>{JSON.stringify(user)}</p> */}
       <div className={classes.header}>
         <Typography variant="h4" component="h4">
           Organizations
@@ -81,8 +88,20 @@ const OrgsPage = (): JSX.Element => {
                 {org.description}
               </Typography>
             </div>
-            {user && <>{user.orgs.includes(org.guid) && <Button>Leave</Button>}</>}
-            {user && <>{!user.orgs.includes(org.guid) && <Button>Join</Button>}</>}
+            {user && (
+              <>
+                {user.orgs.includes(org.guid) && (
+                  <Button onClick={() => leave(org.guid, user.guid)}>Leave</Button>
+                )}
+              </>
+            )}
+            {user && (
+              <>
+                {!user.orgs.includes(org.guid) && (
+                  <Button onClick={() => join(org.guid, user.guid)}>Join</Button>
+                )}
+              </>
+            )}
           </ListItem>
         ))}
       </List>

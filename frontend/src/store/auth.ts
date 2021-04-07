@@ -13,11 +13,15 @@ export interface AuthState {
   isSigningIn: boolean
   isSigningUp: boolean
   isRenewingToken: boolean
+  isJoiningOrg: boolean
+  isLeavingOrg: boolean
 
   // errors
   signinError?: string
   signupError?: string
   renewTokenError?: string
+  joinOrgError?: string
+  leaveOrgError?: string
 }
 
 // Action Types
@@ -29,6 +33,8 @@ export interface AuthErrored {
     signinError?: string
     signupError?: string
     renewTokenError?: string
+    joinOrgError?: string
+    leaveOrgError?: string
   }
 }
 
@@ -69,6 +75,26 @@ export interface SignOut {
   type: "SIGN_OUT"
 }
 
+export interface JoinOrgStarted {
+  type: "JOIN_ORG_STARTED"
+}
+export interface OrgJoined {
+  type: "ORG_JOINED"
+  payload: {
+    orgId: string
+  }
+}
+
+export interface LeaveOrgStarted {
+  type: "LEAVE_ORG_STARTED"
+}
+export interface OrgLeft {
+  type: "ORG_LEFT"
+  payload: {
+    orgId: string
+  }
+}
+
 // TodoAction type
 // this is a type which can refer to any of the action types defined above
 // this is useful for the reducer
@@ -81,6 +107,10 @@ export type AuthAction =
   | TokenRenewed
   | RenewTokenStarted
   | SignOut
+  | OrgJoined
+  | JoinOrgStarted
+  | OrgLeft
+  | LeaveOrgStarted
 
 // Default state
 // when the app initializes, this will be the default redux state
@@ -88,6 +118,8 @@ const defaultState: AuthState = {
   isSigningIn: false,
   isSigningUp: false,
   isRenewingToken: false,
+  isJoiningOrg: false,
+  isLeavingOrg: false,
   token: "",
 }
 
@@ -101,6 +133,8 @@ const reducer = (state: AuthState = defaultState, action: AuthAction): AuthState
         isSigningIn: !action.payload.signinError,
         isSigningUp: !action.payload.signupError,
         isRenewingToken: !action.payload.renewTokenError,
+        isJoiningOrg: !action.payload.joinOrgError,
+        isLeavingOrg: !action.payload.leaveOrgError,
       }
     }
     case "SIGNIN_STARTED": {
@@ -135,6 +169,30 @@ const reducer = (state: AuthState = defaultState, action: AuthAction): AuthState
     }
     case "SIGN_OUT": {
       return { ...state, token: "", user: undefined }
+    }
+    case "JOIN_ORG_STARTED": {
+      return { ...state, isJoiningOrg: true }
+    }
+    case "ORG_JOINED": {
+      return {
+        ...state,
+        user: {
+          ...(state.user ?? ({} as User)),
+          orgs: [...(state.user?.orgs ?? []), action.payload.orgId],
+        },
+      }
+    }
+    case "LEAVE_ORG_STARTED": {
+      return { ...state, isLeavingOrg: true }
+    }
+    case "ORG_LEFT": {
+      return {
+        ...state,
+        user: {
+          ...(state.user ?? ({} as User)),
+          orgs: (state.user?.orgs ?? []).filter((o) => o !== action.payload.orgId),
+        },
+      }
     }
     default: {
       return state
@@ -248,8 +306,64 @@ export const renew = (token: string) => async (dispatch: Dispatch) => {
 }
 
 export const signOut = () => async (dispatch: Dispatch) => {
-  dispatch({ type: "SIGN_OUT" })
   window.localStorage.removeItem("token")
+  dispatch({ type: "SIGN_OUT" })
+}
+
+export const joinOrg = (orgId: string, userId: string) => async (dispatch: Dispatch) => {
+  try {
+    dispatch({ type: "JOIN_ORG_STARTED" })
+    const response = await fetch(`${API_ENDPOINT}/org/join`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orgId, userId }),
+    }).then((r) => r.json())
+    if (response && response.ok) {
+      dispatch({
+        type: "ORG_JOINED",
+        payload: { orgId },
+      })
+      return response.ok
+    } else {
+      dispatch({
+        type: "AUTH_ERRORED",
+        payload: { joinOrgError: response?.error?.toString?.() ?? "Error joining org" },
+      })
+    }
+  } catch (e) {
+    dispatch({
+      type: "AUTH_ERRORED",
+      payload: { joinOrgError: e?.toString?.() ?? "Error joining org" },
+    })
+  }
+}
+
+export const leaveOrg = (orgId: string, userId: string) => async (dispatch: Dispatch) => {
+  try {
+    dispatch({ type: "LEAVE_ORG_STARTED" })
+    const response = await fetch(`${API_ENDPOINT}/org/leave`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orgId, userId }),
+    }).then((r) => r.json())
+    if (response && response.ok) {
+      dispatch({
+        type: "ORG_LEFT",
+        payload: { orgId },
+      })
+      return response.ok
+    } else {
+      dispatch({
+        type: "AUTH_ERRORED",
+        payload: { leaveOrgError: response?.error?.toString?.() ?? "Error leaving org" },
+      })
+    }
+  } catch (e) {
+    dispatch({
+      type: "AUTH_ERRORED",
+      payload: { leaveOrgError: e?.toString?.() ?? "Error leaving org" },
+    })
+  }
 }
 
 // Selectors

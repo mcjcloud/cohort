@@ -46,3 +46,16 @@ export const joinOrg = async (userId: string, orgId: string): Promise<boolean> =
   )
   return !!result.ok
 }
+
+export const leaveOrg = async (userId: string, orgId: string): Promise<boolean> => {
+  const userCollection = await useCollection<User>("user")
+  const result = await userCollection.findOneAndUpdate(
+    { guid: userId },
+    {
+      $pull: {
+        orgs: orgId,
+      },
+    }
+  )
+  return !!result.ok
+}
