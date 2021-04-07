@@ -113,7 +113,7 @@ export const fetchEvents = () => async (dispatch: Dispatch) => {
       dispatch({
         type: "EVENTS_FETCHED",
         payload: {
-          orgs: response.events,
+          events: response.events,
         },
       })
     } else {

@@ -15,6 +15,8 @@ export interface AuthState {
   isRenewingToken: boolean
   isJoiningOrg: boolean
   isLeavingOrg: boolean
+  isRsvpingEvent: boolean
+  isUnrsvpingEvent: boolean
 
   // errors
   signinError?: string
@@ -22,6 +24,8 @@ export interface AuthState {
   renewTokenError?: string
   joinOrgError?: string
   leaveOrgError?: string
+  rsvpEventError?: string
+  unrsvrpEventError?: string
 }
 
 // Action Types
@@ -35,6 +39,8 @@ export interface AuthErrored {
     renewTokenError?: string
     joinOrgError?: string
     leaveOrgError?: string
+    rsvpEventError?: string
+    unrsvrpEventError?: string
   }
 }
 
@@ -95,6 +101,26 @@ export interface OrgLeft {
   }
 }
 
+export interface RsvpEventStarted {
+  type: "RSVP_EVENT_STARTED"
+}
+export interface EventRsvped {
+  type: "EVENT_RSVPED"
+  payload: {
+    eventId: string
+  }
+}
+
+export interface UnrsvpEventStarted {
+  type: "UNRSVP_EVENT_STARTED"
+}
+export interface EventUnrsvped {
+  type: "EVENT_UNRSVPED"
+  payload: {
+    eventId: string
+  }
+}
+
 // TodoAction type
 // this is a type which can refer to any of the action types defined above
 // this is useful for the reducer
@@ -111,6 +137,10 @@ export type AuthAction =
   | JoinOrgStarted
   | OrgLeft
   | LeaveOrgStarted
+  | EventRsvped
+  | RsvpEventStarted
+  | EventUnrsvped
+  | UnrsvpEventStarted
 
 // Default state
 // when the app initializes, this will be the default redux state
@@ -120,6 +150,8 @@ const defaultState: AuthState = {
   isRenewingToken: false,
   isJoiningOrg: false,
   isLeavingOrg: false,
+  isRsvpingEvent: false,
+  isUnrsvpingEvent: false,
   token: "",
 }
 
@@ -180,6 +212,7 @@ const reducer = (state: AuthState = defaultState, action: AuthAction): AuthState
           ...(state.user ?? ({} as User)),
           orgs: [...(state.user?.orgs ?? []), action.payload.orgId],
         },
+        isJoiningOrg: false,
       }
     }
     case "LEAVE_ORG_STARTED": {
@@ -192,6 +225,33 @@ const reducer = (state: AuthState = defaultState, action: AuthAction): AuthState
           ...(state.user ?? ({} as User)),
           orgs: (state.user?.orgs ?? []).filter((o) => o !== action.payload.orgId),
         },
+        isLeavingOrg: false,
+      }
+    }
+    case "RSVP_EVENT_STARTED": {
+      return { ...state, isRsvpingEvent: true }
+    }
+    case "EVENT_RSVPED": {
+      return {
+        ...state,
+        user: {
+          ...(state.user ?? ({} as User)),
+          rsvps: [...(state.user?.rsvps ?? []), action.payload.eventId],
+        },
+        isRsvpingEvent: false,
+      }
+    }
+    case "UNRSVP_EVENT_STARTED": {
+      return { ...state, isUnrsvpingEvent: true }
+    }
+    case "EVENT_UNRSVPED": {
+      return {
+        ...state,
+        user: {
+          ...(state.user ?? ({} as User)),
+          rsvps: (state.user?.rsvps ?? []).filter((e) => e !== action.payload.eventId),
+        },
+        isUnrsvpingEvent: false,
       }
     }
     default: {
@@ -362,6 +422,62 @@ export const leaveOrg = (orgId: string, userId: string) => async (dispatch: Disp
     dispatch({
       type: "AUTH_ERRORED",
       payload: { leaveOrgError: e?.toString?.() ?? "Error leaving org" },
+    })
+  }
+}
+
+export const rsvpEvent = (eventId: string, userId: string) => async (dispatch: Dispatch) => {
+  dispatch({ type: "RSVP_EVENT_STARTED" })
+  try {
+    const response = await fetch(`${API_ENDPOINT}/event/rsvp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventId, userId }),
+    }).then((r) => r.json())
+    if (response && response.ok) {
+      dispatch({
+        type: "EVENT_RSVPED",
+        payload: { eventId },
+      })
+      return response.ok
+    } else {
+      dispatch({
+        type: "AUTH_ERRORED",
+        payload: { rsvpEventError: response?.error?.toString?.() ?? "Error rsvping to event" },
+      })
+    }
+  } catch (e) {
+    dispatch({
+      type: "AUTH_ERRORED",
+      payload: { rsvpEventError: e?.toString?.() ?? "Error rsvping to event" },
+    })
+  }
+}
+
+export const unrsvpEvent = (eventId: string, userId: string) => async (dispatch: Dispatch) => {
+  dispatch({ type: "UNRSVP_EVENT_STARTED" })
+  try {
+    const response = await fetch(`${API_ENDPOINT}/event/unrsvp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventId, userId }),
+    }).then((r) => r.json())
+    if (response && response.ok) {
+      dispatch({
+        type: "EVENT_UNRSVPED",
+        payload: { eventId },
+      })
+      return response.ok
+    } else {
+      dispatch({
+        type: "AUTH_ERRORED",
+        payload: { unrsvpEventError: response?.error?.toString?.() ?? "Error unrsvping to event" },
+      })
+    }
+  } catch (e) {
+    dispatch({
+      type: "AUTH_ERRORED",
+      payload: { unrsvpEventError: e?.toString?.() ?? "Error unrsvping to event" },
     })
   }
 }

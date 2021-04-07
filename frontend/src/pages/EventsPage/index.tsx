@@ -1,8 +1,9 @@
 import { Button, makeStyles, Typography } from "@material-ui/core"
-import React, { useState } from "react"
-import { useSelector } from "react-redux"
+import React, { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
 import { selectUser } from "../../store/auth"
-import { selectEvents } from "../../store/event"
+import { fetchEvents, selectEvents } from "../../store/event"
+import { fetchOrgs } from "../../store/org"
 import CreateEventModal from "./CreateEventModal"
 import EventTile from "./EventTile"
 
@@ -19,14 +20,25 @@ const useStyles = makeStyles({
     justifyContent: "space-between",
     margin: "32px",
   },
-  eventGrid: {},
+  eventGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, 250px)",
+    justifyContent: "center",
+    gap: "16px",
+  },
 })
 
 const EventsPage = (): JSX.Element => {
   const classes = useStyles()
+  const dispatch = useDispatch()
   const [modalOpen, setModalOpen] = useState<boolean>(false)
   const events = useSelector(selectEvents())
   const user = useSelector(selectUser())
+
+  useEffect(() => {
+    dispatch(fetchEvents())
+    dispatch(fetchOrgs())
+  }, [dispatch])
 
   return (
     <div className={classes.root}>

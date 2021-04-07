@@ -3,6 +3,7 @@ import express from "express"
 import { orgRouter } from "./routes/org"
 import { todoRouter } from "./routes/todo"
 import { authRouter } from "./routes/auth"
+import { eventRouter } from "./routes/event"
 
 // create a new express app
 // this will be used to add all routes and request handlers
@@ -18,6 +19,7 @@ app.use(cors())
 app.use("/todo", todoRouter)
 app.use("/auth", authRouter)
 app.use("/org", orgRouter)
+app.use("/event", eventRouter)
 
 // start the app
 app.listen(process.env.PORT || 8080, () => console.log("Server started."))

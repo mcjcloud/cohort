@@ -2,7 +2,7 @@ import express, { Request, Response } from "express"
 import { check, validationResult } from "express-validator/check"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import UserScheme, { User } from "../models/User"
+import UserScheme, { User } from "../models/user"
 export const authRouter = express.Router()
 /**
  * @method - POST

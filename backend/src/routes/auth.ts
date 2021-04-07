@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import { User } from "../models/User"
+import { User } from "../models/user"
 import { useCollection } from "../services/db"
 import { v4 as uuid } from "uuid"
 
@@ -39,6 +39,7 @@ authRouter.post("/signup", async (req: Request, res: Response) => {
       password: hash,
       salt,
       orgs: [],
+      rsvps: [],
     }
     await userCollection.insertOne(userPayload)
 
