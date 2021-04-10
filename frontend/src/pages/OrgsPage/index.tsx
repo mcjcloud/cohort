@@ -79,7 +79,7 @@ const OrgsPage = (): JSX.Element => {
       </div>
       <List component="nav" className={classes.orgList}>
         {orgs.map((org: Org) => (
-          <ListItem component="div" className={classes.listItem}>
+          <ListItem key={`org_${org.guid}`} component="div" className={classes.listItem}>
             <div className={classes.info}>
               <Typography variant="h6" component="p">
                 {org.name}

@@ -55,7 +55,7 @@ const EventsPage = (): JSX.Element => {
       </div>
       <div className={classes.eventGrid}>
         {events.map((e) => (
-          <EventTile event={e} />
+          <EventTile key={`event_tile_${e.guid}`} event={e} />
         ))}
       </div>
     </div>

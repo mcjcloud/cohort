@@ -119,7 +119,9 @@ const CreateEventModal: React.FC<Props> = ({ open = false, close }) => {
                 disabled={organizations.length <= 1}
               >
                 {organizations.map((org) => (
-                  <MenuItem value={org.guid}>{org.name}</MenuItem>
+                  <MenuItem key={`org_menu_item_${org.guid}`} value={org.guid}>
+                    {org.name}
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
