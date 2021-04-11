@@ -2,7 +2,7 @@ import { State as RootState } from "./index"
 import { Dispatch } from "redux"
 import { Org } from "../models/org"
 
-const API_ENDPOINT = "http://localhost:8080"
+export const API_ENDPOINT = "https://cohort-unt.herokuapp.com"
 
 // State type
 export interface OrgState {

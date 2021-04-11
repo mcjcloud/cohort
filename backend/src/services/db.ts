@@ -1,11 +1,15 @@
 import { Collection, MongoClient } from "mongodb"
 
+const DB_URL =
+  "mongodb+srv://ebay:event-bay@cluster0.1iadj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+// const DB_URL = "mongodb://localhost:27017"
+
 /**
  * create a reference to the mongodb database
  */
 const useMongoDB = async (): Promise<MongoClient> => {
   return new Promise((resolve, reject) => {
-    MongoClient.connect("mongodb://localhost:27017", (err, client) => {
+    MongoClient.connect(DB_URL, (err, client) => {
       if (!!err) {
         return reject(err)
       } else {

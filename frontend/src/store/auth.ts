@@ -2,7 +2,7 @@ import { User } from "../models/user"
 import { State as RootState } from "./index"
 import { Dispatch } from "redux"
 
-const API_ENDPOINT = "http://localhost:8080"
+export const API_ENDPOINT = "https://cohort-unt.herokuapp.com"
 
 // State type
 export interface AuthState {
